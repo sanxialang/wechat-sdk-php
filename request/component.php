@@ -7,33 +7,43 @@ require_once dirname(__DIR__) . '/lib/wxBizMsgCrypt.php';
 class component extends BaseApi{
 
     private $callback_url;
-
     private $component_ticket = '';
     private $component_access_token = '';
 
     public function __construct(){
         parent::__construct();
-        $this->callback_url = '';
     }
 
+    /**
+     *
+     */
     public function setCallbackUrl($callback){
         $this->callback_url = $callback;
     }
 
+    /**
+     *
+     */
     private function setComponentVerifyTicket($component_ticket){
-        file_put_contents( dirname(__DIR__). '/log/tickets.log', $component_ticket);
+        file_put_contents( dirname(__DIR__). '/runtime/tickets.log', $component_ticket);
         return $this->component_ticket = $component_ticket;
     }
 
+    /**
+     *
+     */
     private function getComponentVerifyTicket(){
         if('' !== $this->component_ticket){
             return $this->component_ticket;
-        }elseif(file_exists( dirname(__DIR__). '/log/tickets.log')){
-            return file_get_contents( dirname(__DIR__). '/log/tickets.log');
+        }elseif(file_exists( dirname(__DIR__). '/runtime/tickets.log')){
+            return file_get_contents( dirname(__DIR__). '/runtime/tickets.log');
         }
         return ;
     }
 
+    /**
+     *
+     */
     public function parseComponentVerifyTicket($msg_sign, $timeStamp, $nonce, $from_xml){
         $pc = new \WXBizMsgCrypt($this->token, $this->encodingAesKey, $this->getAppId());
 
@@ -41,7 +51,7 @@ class component extends BaseApi{
         $msg = '';
         $errCode = $pc->decryptMsg($msg_sign, $timeStamp, $nonce, $from_xml, $msg);
         if ($errCode == 0) {
-            $xml_tree = new DOMDocument();
+            $xml_tree = new \DOMDocument();
             $xml_tree->loadXML($msg);
             $array_e = $xml_tree->getElementsByTagName('ComponentVerifyTicket');
             $ticket = $array_e->item(0)->nodeValue;
@@ -53,6 +63,9 @@ class component extends BaseApi{
         return $this->component_ticket;
     }
 
+    /**
+     *
+     */
     public function getComponentLoginpageLink(){
         $location = sprintf(
                 'https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=%s&pre_auth_code=%s&redirect_uri=%s&auth_type=%d',
@@ -64,6 +77,9 @@ class component extends BaseApi{
         return $location;
     }
 
+    /**
+     *
+     */
     public function getComponentBindLink(){
         $location = sprintf(
                 'https://mp.weixin.qq.com/safe/bindcomponent?action=bindcomponent&no_scan=1&component_appid=%s&pre_auth_code=%s&redirect_uri=%s&auth_type=%d&biz_appid=%s#wechat_redirect',
@@ -76,6 +92,9 @@ class component extends BaseApi{
         return $location;
     }
 
+    /**
+     *
+     */
     private function getComponentAccessToken( ){
         if('' !== $this->component_access_token){
             return $this->component_access_token;
@@ -93,11 +112,16 @@ class component extends BaseApi{
             if(!empty($obj->component_access_token)){
                 $this->component_access_token = $obj->component_access_token;
                 return $this->component_access_token;
+            }else{
+                throw new \Exception();
             }
         }
         return ;
     }
 
+    /**
+     *
+     */
     public function getPreAuthCode(){
         $api = sprintf( $this->api_base_url . 'component/api_create_preauthcode?component_access_token=%s', $this->getComponentAccessToken());
         $params = array(
@@ -114,6 +138,9 @@ class component extends BaseApi{
         return ;
     }
 
+    /**
+     *
+     */
     public function getAccessToken($authcode){
         $api = sprintf( $this->api_base_url . 'component/api_query_auth?component_access_token=%s', $this->getComponentAccessToken());
         $params = array(
@@ -125,7 +152,7 @@ class component extends BaseApi{
         if(false !== $json){
             $obj = json_decode($json);
             if(!empty($obj->authorization_info)){
-                file_put_contents( dirname(__DIR__). '/log/AuthorizerAccessToke.log', $json."\n", FILE_APPEND);
+                file_put_contents( dirname(__DIR__). '/runtime/AuthorizerAccessToken.log', $json."\n", FILE_APPEND);
                 $obj->authorization_info->expires_at = time() + $obj->authorization_info->expires_in;
                 return $obj->authorization_info;
             }else{
@@ -135,6 +162,9 @@ class component extends BaseApi{
         return;
     }
 
+    /**
+     *
+     */
     public function refreshAccessToken($authorizer_appid, $authorizer_refresh_token){
         $api = sprintf( $this->api_base_url . 'component/api_authorizer_token?component_access_token=%s', $this->getComponentAccessToken());
         $params = array(
@@ -146,12 +176,19 @@ class component extends BaseApi{
         $this->debug(__METHOD__ . $json);
         if(null!=$json){
             $obj = json_decode($json);
-            $obj->expires_at = time() + $obj->expires_in;
-            return $obj;
+	    if(!empty($obj->expires_in)){
+                $obj->expires_at = time() + $obj->expires_in;
+                return $obj;
+	    }else{
+                throw new \Exception();
+	    }
         }
         return ;
     }
 
+    /**
+     *
+     */
     public function getAuthorizerInfo($authorizer_appid){
         $api = sprintf( $this->api_base_url. 'component/api_get_authorizer_info?component_access_token=%s', $this->getComponentAccessToken());
         $params = array(
@@ -166,6 +203,5 @@ class component extends BaseApi{
         }
         return ;
     }
-
 
 }

@@ -102,9 +102,9 @@ class template extends BaseApi{
     /**
      * 发送模板消息
      */
-    public function send($access_token , \ezwechat\entity\messageInfo $params ){
+    public function send($access_token , \ezwechat\entity\messageInfo $messageInfo ){
         $api = sprintf( $this->api_base_url . 'message/template/send?access_token=%s', $access_token);
-        $json = $this->api_request_post($api, $params->__toString() );
+        $json = $this->api_request_post($api, $messageInfo->__toString() );
         $this->debug(__METHOD__ . $json);
         if( '' != $json){
             $obj = json_decode($json);
