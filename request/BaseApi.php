@@ -4,7 +4,7 @@ namespace ezwechat\request;
 require_once dirname(__DIR__) . '/lib/wxBizMsgCrypt.php';
 
 class BaseApi{
-    protected $debug_mode = true;
+    protected $debug_mode = false;
 
     protected $appId ;
     protected $appSecret;
@@ -24,6 +24,10 @@ class BaseApi{
 
     public function getAppId(){
         return $this->appId;
+    }
+
+    public function getAuthorizer_access_token(){
+        return $this->authorizer_access_token;
     }
 
     protected function debug($info){
