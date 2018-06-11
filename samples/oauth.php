@@ -1,5 +1,5 @@
 <?php
-require_once 'request/component.php';
+require_once dirname(__DIR__). '/src/request/component.php';
 
 /**
  * 接收微信定时推送的ticket

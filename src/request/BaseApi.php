@@ -4,7 +4,7 @@ namespace ezwechat\request;
 require_once dirname(__DIR__) . '/lib/wxBizMsgCrypt.php';
 
 class BaseApi{
-    protected $debug_mode = false;
+    protected $debug_mode = true;
 
     protected $appId ;
     protected $appSecret;
@@ -15,7 +15,7 @@ class BaseApi{
     protected $api_base_url = 'https://api.weixin.qq.com/cgi-bin/';
 
     public function __construct(){
-	$config = require_once __DIR__ . '/../config.php';
+	$config = include __DIR__ . '/../config.php';
 	$this->appId = $config['appId'];
 	$this->appSecret = $config['appSecret'];
 	$this->token = $config['token'];
@@ -31,8 +31,10 @@ class BaseApi{
     }
 
     protected function debug($info){
-        if($this->debug_mode)
-            var_dump($info);
+        if($this->debug_mode){
+            //var_dump($info);
+   	    file_put_contents( dirname(__DIR__).'/runtime/debug.log', var_export($info ,true) . "\n", FILE_APPEND); 
+        }
             
     }
 
