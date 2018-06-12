@@ -5,6 +5,10 @@ require_once 'BaseApi.php';
 
 class event extends BaseApi{
 
+    public function __construct(){
+        parent::__construct();
+    }
+
     public function parseMsgXml($xml){
         $jsonObj = $this->xml_to_json($xml);
 	return $jsonObj;

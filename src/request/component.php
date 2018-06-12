@@ -1,8 +1,7 @@
 <?php
 namespace ezwechat\request;
 
-require_once __DIR__ . '/BaseApi.php';
-require_once dirname(__DIR__) . '/lib/wxBizMsgCrypt.php';
+require_once __DIR__. '/BaseApi.php';
 
 class component extends BaseApi{
 
@@ -69,7 +68,7 @@ class component extends BaseApi{
     public function getComponentLoginpageLink(){
         $location = sprintf(
                 'https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=%s&pre_auth_code=%s&redirect_uri=%s&auth_type=%d',
-                $this->appId,
+                $this->getAppId(),
                 $this->getPreAuthCode(),
                 urlencode( $this->callback_url ),
                 1
@@ -83,7 +82,7 @@ class component extends BaseApi{
     public function getComponentBindLink(){
         $location = sprintf(
                 'https://mp.weixin.qq.com/safe/bindcomponent?action=bindcomponent&no_scan=1&component_appid=%s&pre_auth_code=%s&redirect_uri=%s&auth_type=%d&biz_appid=%s#wechat_redirect',
-                $this->appId,
+                $this->getAppId(),
                 $this->getPreAuthCode(),
                 urlencode( $this->callback_url ),
                 1,
@@ -100,7 +99,7 @@ class component extends BaseApi{
             return $this->component_access_token;
         }
         $params = array(
-            'component_appid' =>$this->appId,
+            'component_appid' =>$this->getAppId(),
             'component_appsecret' => $this->appSecret,
             'component_verify_ticket' => $this->getComponentVerifyTicket()
         );
@@ -125,7 +124,7 @@ class component extends BaseApi{
     public function getPreAuthCode(){
         $api = sprintf( $this->api_base_url . 'component/api_create_preauthcode?component_access_token=%s', $this->getComponentAccessToken());
         $params = array(
-            'component_appid' =>$this->appId,
+            'component_appid' =>$this->getAppId(),
         );
         $json = $this->api_request_post($api, $params) ;
         $this->debug(__METHOD__ . $json);
@@ -144,7 +143,7 @@ class component extends BaseApi{
     public function getAccessToken($authcode){
         $api = sprintf( $this->api_base_url . 'component/api_query_auth?component_access_token=%s', $this->getComponentAccessToken());
         $params = array(
-            'component_appid' =>$this->appId,
+            'component_appid' =>$this->getAppId(),
             'authorization_code' =>$authcode,
         );
         $json = $this->api_request_post($api, $params) ;
@@ -168,7 +167,7 @@ class component extends BaseApi{
     public function refreshAccessToken($authorizer_appid, $authorizer_refresh_token){
         $api = sprintf( $this->api_base_url . 'component/api_authorizer_token?component_access_token=%s', $this->getComponentAccessToken());
         $params = array(
-            'component_appid' => $this->appId,
+            'component_appid' => $this->getAppId(),
             'authorizer_appid' => $authorizer_appid,
             'authorizer_refresh_token' => $authorizer_refresh_token,
         );
@@ -176,12 +175,12 @@ class component extends BaseApi{
         $this->debug(__METHOD__ . $json);
         if(null!=$json){
             $obj = json_decode($json);
-	    if(!empty($obj->expires_in)){
+            if(!empty($obj->expires_in)){
                 $obj->expires_at = time() + $obj->expires_in;
                 return $obj;
-	    }else{
+            }else{
                 throw new \Exception();
-	    }
+            }
         }
         return ;
     }
@@ -192,7 +191,7 @@ class component extends BaseApi{
     public function getAuthorizerInfo($authorizer_appid){
         $api = sprintf( $this->api_base_url. 'component/api_get_authorizer_info?component_access_token=%s', $this->getComponentAccessToken());
         $params = array(
-            'component_appid' =>$this->appId,
+            'component_appid' =>$this->getAppId(),
             'authorizer_appid' =>$authorizer_appid,
         );
         $json = $this->api_request_post($api, $params) ;
